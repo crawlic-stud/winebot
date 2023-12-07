@@ -2,12 +2,12 @@ import asyncio
 import os
 from bson import ObjectId
 
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection
+from motor.motor_asyncio import AsyncIOMotorClient
 
 import models
 
-DB_NAME = "winebot"
-MONGO_URL = os.environ["MONGO_URL"]
+DB_NAME = os.environ["DB_NAME"]
+MONGO_URL = f'mongodb://{os.environ["MONGO_USER"]}:{os.environ["MONGO_PASSWORD"]}@{os.environ["MONGO_HOST"]}:{os.environ["MONGO_PORT"]}'
 client = AsyncIOMotorClient(MONGO_URL)
 client.get_io_loop = asyncio.get_running_loop
 

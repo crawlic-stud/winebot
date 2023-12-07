@@ -1,14 +1,13 @@
 import asyncio
 
-from config import dp, bot, ADMIN_ID
+from config import dp, bot, ADMIN_ID, on_startup
 from database import get_db, models
 
 
 async def main():
-    await get_db(models.Admin).update_one(
-        {"user_id": ADMIN_ID}, {"$set": {"user_id": ADMIN_ID}}, upsert=True
-    )
-
+    admins_db = get_db(models.Admin)
+    await on_startup(admins_db)
+    
     await dp.start_polling(bot)
 
 

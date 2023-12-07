@@ -60,7 +60,7 @@ async def get_all_products_kb():
 
 
 @router.callback_query(F.data == GO_TO_MENU)
-@router.message(Command("menu"))
+@router.message(Command("menu", "start"))
 async def send_menu(update: types.Message | types.CallbackQuery):
     text = "Выберите, что хотите приобрести:"
     reply_markup = types.InlineKeyboardMarkup(

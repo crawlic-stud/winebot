@@ -16,6 +16,7 @@ VIEW_PRODUCTS = "view_products"
 VIEW_EVENTS = "view_events"
 GO_TO_MENU = "go_to_menu"
 ORDER_PRODUCT = "order_product"
+THANK_YOU_FOR_ORDER = "thx_bro"
 
 
 class UserView(StatesGroup):
@@ -113,6 +114,11 @@ async def view_product(query: types.CallbackQuery, callback_data: ViewProduct):
     )
 
 
+@router.callback_query(F.data == THANK_YOU_FOR_ORDER)
+async def say_thanks(query: types.CallbackQuery):
+    await query.answer("Спасибо еще раз! С вами скоро свяжутся :)", show_alert=True)
+
+
 @router.callback_query(OrderProduct.filter())
 async def order_product(query: types.CallbackQuery, callback_data: OrderProduct):
     await query.answer(
@@ -130,7 +136,7 @@ async def order_product(query: types.CallbackQuery, callback_data: OrderProduct)
             inline_keyboard=[
                 [
                     types.InlineKeyboardButton(
-                        text="Заказ принят 💚", callback_data="booba"
+                        text="Заказ принят 💚", callback_data=THANK_YOU_FOR_ORDER
                     )
                 ],
                 kb.back_button_row(VIEW_PRODUCTS),

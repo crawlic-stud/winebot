@@ -1,9 +1,11 @@
 from typing import Optional
 
-from pydantic import BaseModel, field_validator, Field
+from pydantic import BaseModel, Field
 
 
 class Model(BaseModel):
+    id: Optional[str] = Field(default=None, alias="product_id")
+
     @classmethod
     def get_collection(cls):
         return cls.__name__.lower() + "s"

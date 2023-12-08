@@ -3,9 +3,9 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.filters.callback_data import CallbackData
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
-from bson import ObjectId
 
 import database
+from handlers.product import EDIT_PRODUCT_BUTTONS
 import utils
 import kb
 from models import Admin, Product
@@ -90,10 +90,9 @@ async def view_products(query: types.CallbackQuery):
         await m.edit_text(text=text, reply_markup=reply_markup)
 
 
-@router.callback_query(ViewProduct.filter())
-async def view_product(query: types.CallbackQuery, callback_data: ViewProduct):
-    await query.answer("Показываем")
-    product: Product = await database.get_by_id(callback_data.product_id, Product)
+async def render_view_for_user(
+    query: types.CallbackQuery, callback_data: ViewProduct, product: Product
+):
     await utils.send_product_info(
         query.message,
         product,
@@ -112,6 +111,41 @@ async def view_product(query: types.CallbackQuery, callback_data: ViewProduct):
         ),
         edit=True,
     )
+
+
+async def render_view_for_admin(
+    query: types.CallbackQuery, callback_data: ViewProduct, product: Product
+):
+    await utils.send_product_info(
+        m=query.message,
+        product=product,
+        markup=types.InlineKeyboardMarkup(
+            inline_keyboard=[
+                *EDIT_PRODUCT_BUTTONS,
+                kb.delete_obj_row(
+                    product.name, callback_data.product_id, Product.get_collection()
+                ),
+                kb.back_button_row(VIEW_PRODUCTS),
+            ]
+        ),
+        edit=True,
+    )
+
+
+@router.callback_query(ViewProduct.filter())
+async def view_product(
+    query: types.CallbackQuery, callback_data: ViewProduct, state: FSMContext
+):
+    await query.answer("Показываем")
+    product: Product = await database.get_by_id(callback_data.product_id, Product)
+    is_admin = await database.is_admin(query.from_user.id)
+    if is_admin:
+        await state.update_data(
+            {**product.model_dump(), "product_id": callback_data.product_id}
+        )
+        await render_view_for_admin(query, callback_data, product)
+    else:
+        await render_view_for_user(query, callback_data, product)
 
 
 @router.callback_query(F.data == THANK_YOU_FOR_ORDER)

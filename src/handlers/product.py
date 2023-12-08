@@ -21,35 +21,34 @@ class CreateOrder(StatesGroup):
     final = State()
 
 
+EDIT_PRODUCT_BUTTONS = [
+    [
+        types.InlineKeyboardButton(
+            text="✅ Сохранить",
+            callback_data=SAVE_ORDER,
+        )
+    ],
+    *utils.create_edit_keyboard(
+        {
+            CreateOrder.name.state: "✏️ Название",
+            CreateOrder.photo.state: "✏️ Фото",
+            CreateOrder.description.state: "✏️ Описание",
+            CreateOrder.price.state: "✏️ Цена",
+        }
+    ),
+]
+
+
 router = Router(
     name="product",
 )
 
 
-async def send_final_message(
-    m: types.Message, product: Product, with_markup: bool = True
-):
+async def send_final_message(m: types.Message, product: Product):
     await utils.send_product_info(
         m=m,
         product=product,
-        markup=types.InlineKeyboardMarkup(
-            inline_keyboard=[
-                [
-                    types.InlineKeyboardButton(
-                        text="✅ Сохранить",
-                        callback_data=SAVE_ORDER,
-                    )
-                ],
-                *utils.create_edit_keyboard(
-                    {
-                        CreateOrder.name.state: "✏️ Название",
-                        CreateOrder.photo.state: "✏️ Фото",
-                        CreateOrder.description.state: "✏️ Описание",
-                        CreateOrder.price.state: "✏️ Цена",
-                    }
-                ),
-            ]
-        ),
+        markup=types.InlineKeyboardMarkup(inline_keyboard=EDIT_PRODUCT_BUTTONS),
     )
 
 
@@ -137,4 +136,6 @@ async def save_order(query: types.CallbackQuery, state: FSMContext):
     await database.save(product)
     await state.clear()
     await query.message.delete_reply_markup()
-    await query.message.answer("Сохранено!")
+    await query.message.answer(
+        "Сохранено! Можете просмотреть или отредактировать товар по команде /menu"
+    )

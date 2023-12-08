@@ -19,10 +19,12 @@ logging.basicConfig(level=logging.INFO)
 
 def setup():
     from handlers import product
+    from handlers import events
     from handlers import user_view
     from handlers import delete
 
     dp.include_router(product.router)
+    dp.include_router(events.router)
     dp.include_router(user_view.router)
     dp.include_router(delete.router)
 
@@ -43,6 +45,7 @@ async def on_startup(admins_db: AsyncIOMotorCollection):
         await bot.set_my_commands(
             [
                 types.BotCommand(command="order", description="Создать новый товар"),
+                types.BotCommand(command="event", description="Добавить в афишу"),
                 *default_commands,
             ],
             types.BotCommandScopeChat(chat_id=admin["user_id"]),

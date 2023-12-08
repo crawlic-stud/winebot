@@ -5,18 +5,20 @@ from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 
 import database
+from handlers.events import EDIT_EVENT_BUTTONS
 from handlers.product import EDIT_PRODUCT_BUTTONS
 import utils
 import kb
-from models import Admin, Product
+from models import Admin, Event, Product
 from config import bot
 
 
 VIEW_PRODUCTS = "view_products"
-VIEW_EVENTS = "view_events"
-GO_TO_MENU = "go_to_menu"
 ORDER_PRODUCT = "order_product"
 THANK_YOU_FOR_ORDER = "thx_bro"
+VIEW_EVENTS = "view_events"
+I_WILL_GO = "i_will_go"
+GO_TO_MENU = "go_to_menu"
 
 
 class UserView(StatesGroup):
@@ -39,6 +41,10 @@ class ViewProduct(CallbackData, prefix="view_product"):
     product_id: str
 
 
+class ViewEvent(CallbackData, prefix="view_event"):
+    event_id: str
+
+
 router = Router(name="user_view")
 
 
@@ -52,6 +58,23 @@ async def get_all_products_kb():
                 types.InlineKeyboardButton(
                     text=f"{product.name} - {product.price} руб.",
                     callback_data=ViewProduct(product_id=product_id).pack(),
+                )
+            ]
+        )
+    _kb.append(kb.back_button_row(GO_TO_MENU))
+    return _kb
+
+
+async def get_all_events_kb():
+    _kb = []
+    async for raw_event in database.get_db(Event).find():
+        event_id = str(raw_event["_id"])
+        event = Event(**raw_event)
+        _kb.append(
+            [
+                types.InlineKeyboardButton(
+                    text=f"{event.name} - {utils.parse_dt_to_str(event.date)}",
+                    callback_data=ViewEvent(event_id=event_id).pack(),
                 )
             ]
         )
@@ -90,8 +113,21 @@ async def view_products(query: types.CallbackQuery):
         await m.edit_text(text=text, reply_markup=reply_markup)
 
 
-async def render_view_for_user(
-    query: types.CallbackQuery, callback_data: ViewProduct, product: Product
+@router.callback_query(F.data == VIEW_EVENTS)
+async def view_events(query: types.CallbackQuery):
+    await query.answer("Показываем...")
+    text = "Список доступных товаров:"
+    reply_markup = types.InlineKeyboardMarkup(inline_keyboard=await get_all_events_kb())
+    m = query.message
+    if m.photo:
+        await m.delete()
+        await m.answer(text=text, reply_markup=reply_markup)
+    else:
+        await m.edit_text(text=text, reply_markup=reply_markup)
+
+
+async def render_product_view_for_user(
+    query: types.CallbackQuery, object_id: str, product: Product
 ):
     await utils.send_product_info(
         query.message,
@@ -101,9 +137,7 @@ async def render_view_for_user(
                 [
                     types.InlineKeyboardButton(
                         text="❤️ Хочу! ❤️",
-                        callback_data=OrderProduct(
-                            product_id=callback_data.product_id
-                        ).pack(),
+                        callback_data=OrderProduct(product_id=object_id).pack(),
                     )
                 ],
                 kb.back_button_row(VIEW_PRODUCTS),
@@ -113,8 +147,8 @@ async def render_view_for_user(
     )
 
 
-async def render_view_for_admin(
-    query: types.CallbackQuery, callback_data: ViewProduct, product: Product
+async def render_product_view_for_admin(
+    query: types.CallbackQuery, object_id: str, product: Product
 ):
     await utils.send_product_info(
         m=query.message,
@@ -122,10 +156,46 @@ async def render_view_for_admin(
         markup=types.InlineKeyboardMarkup(
             inline_keyboard=[
                 *EDIT_PRODUCT_BUTTONS,
-                kb.delete_obj_row(
-                    product.name, callback_data.product_id, Product.get_collection()
-                ),
+                kb.delete_obj_row(object_id, Product.get_collection()),
                 kb.back_button_row(VIEW_PRODUCTS),
+            ]
+        ),
+        edit=True,
+    )
+
+
+async def render_event_view_for_user(
+    query: types.CallbackQuery, object_id: str, event: Event
+):
+    await utils.send_event_info(
+        query.message,
+        event,
+        markup=types.InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    types.InlineKeyboardButton(
+                        text="❤️ Хочу пойти! ❤️",
+                        callback_data=OrderEvent(event_id=object_id).pack(),
+                    )
+                ],
+                kb.back_button_row(VIEW_EVENTS),
+            ]
+        ),
+        edit=True,
+    )
+
+
+async def render_event_view_for_admin(
+    query: types.CallbackQuery, object_id: str, event: Event
+):
+    await utils.send_event_info(
+        m=query.message,
+        event=event,
+        markup=types.InlineKeyboardMarkup(
+            inline_keyboard=[
+                *EDIT_EVENT_BUTTONS,
+                kb.delete_obj_row(object_id, Event.get_collection()),
+                kb.back_button_row(VIEW_EVENTS),
             ]
         ),
         edit=True,
@@ -141,11 +211,27 @@ async def view_product(
     is_admin = await database.is_admin(query.from_user.id)
     if is_admin:
         await state.update_data(
-            {**product.model_dump(), "product_id": callback_data.product_id}
+            {**product.model_dump(), "object_id": callback_data.product_id}
         )
-        await render_view_for_admin(query, callback_data, product)
+        await render_product_view_for_admin(query, callback_data.product_id, product)
     else:
-        await render_view_for_user(query, callback_data, product)
+        await render_product_view_for_user(query, callback_data.product_id, product)
+
+
+@router.callback_query(ViewEvent.filter())
+async def view_event(
+    query: types.CallbackQuery, callback_data: ViewEvent, state: FSMContext
+):
+    await query.answer("Показываем")
+    event: Event = await database.get_by_id(callback_data.event_id, Event)
+    is_admin = await database.is_admin(query.from_user.id)
+    if is_admin:
+        await state.update_data(
+            {**event.model_dump(), "object_id": callback_data.event_id}
+        )
+        await render_event_view_for_admin(query, callback_data.event_id, event)
+    else:
+        await render_event_view_for_user(query, callback_data.event_id, event)
 
 
 @router.callback_query(F.data == THANK_YOU_FOR_ORDER)
@@ -174,6 +260,34 @@ async def order_product(query: types.CallbackQuery, callback_data: OrderProduct)
                     )
                 ],
                 kb.back_button_row(VIEW_PRODUCTS),
+            ]
+        )
+    )
+    async for admin in database.get_db(Admin).find():
+        await bot.send_message(admin["user_id"], text)
+
+
+@router.callback_query(OrderEvent.filter())
+async def order_product(query: types.CallbackQuery, callback_data: OrderEvent):
+    await query.answer(
+        "Спасибо за заказ! Свяжемся с вами в ближайшее время :)", show_alert=True
+    )
+    event: Event = await database.get_by_id(callback_data.event_id, Event)
+    text = (
+        f"Поступила заявка!\n\n"
+        f"Продукт: {event.name} {utils.parse_dt_to_str(event.date)}\n"
+        f"Покупатель: {query.from_user.full_name}\n"
+        f"Ник в телеграме: @{query.from_user.username}"
+    )
+    await query.message.edit_reply_markup(
+        reply_markup=types.InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    types.InlineKeyboardButton(
+                        text="Заказ принят 💚", callback_data=THANK_YOU_FOR_ORDER
+                    )
+                ],
+                kb.back_button_row(VIEW_EVENTS),
             ]
         )
     )

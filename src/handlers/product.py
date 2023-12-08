@@ -3,6 +3,7 @@ from aiogram import Router, types, F
 from aiogram.filters.command import Command
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
+from aiogram.filters.callback_data import CallbackData
 
 from filters.admin_filter import AdminFilter
 from models import Product
@@ -21,6 +22,11 @@ class CreateOrder(StatesGroup):
     final = State()
 
 
+class EditProductData(CallbackData, prefix="edit_product"):
+    states_group: str
+    state_name: str
+
+
 EDIT_PRODUCT_BUTTONS = [
     [
         types.InlineKeyboardButton(
@@ -34,7 +40,8 @@ EDIT_PRODUCT_BUTTONS = [
             CreateOrder.photo.state: "✏️ Фото",
             CreateOrder.description.state: "✏️ Описание",
             CreateOrder.price.state: "✏️ Цена",
-        }
+        },
+        EditProductData,
     ),
 ]
 
@@ -107,9 +114,9 @@ async def add_price(m: types.Message, state: FSMContext):
     await send_final_message(m, product)
 
 
-@router.callback_query(utils.EditData.filter())
+@router.callback_query(EditProductData.filter())
 async def edit_text_field(
-    query: types.CallbackQuery, callback_data: utils.EditData, state: FSMContext
+    query: types.CallbackQuery, callback_data: EditProductData, state: FSMContext
 ):
     await query.answer("Редактируем...")
     await state.update_data(edit=True)

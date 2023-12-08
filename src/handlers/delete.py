@@ -1,6 +1,7 @@
 from aiogram import types, Router, F
 from aiogram.filters.callback_data import CallbackData
 from aiogram.fsm.context import FSMContext
+from bson import ObjectId
 
 import database
 
@@ -12,8 +13,7 @@ CANCEL_DELETE = "cancel_delete"
 router = Router(name="delete")
 
 
-class DeleteData(CallbackData, prefix="delete_data"):
-    obj_name: str
+class DeleteData(CallbackData, prefix="del"):
     object_id: str
     collection: str
 
@@ -24,8 +24,14 @@ async def send_are_you_sure_message(
 ):
     await query.message.delete()
     await state.update_data(callback_data.model_dump())
+    obj = (
+        await database.db[callback_data.collection].find_one(
+            {"_id": ObjectId(callback_data.object_id)}
+        )
+        or {}
+    )
     await query.message.answer(
-        f'Уверены, что хотите удалить "{callback_data.obj_name}"?',
+        f'Уверены, что хотите удалить "{obj.get("name")}"?',
         reply_markup=types.InlineKeyboardMarkup(
             inline_keyboard=[
                 [types.InlineKeyboardButton(text="Да", callback_data=CONFIRM_DELETE)],

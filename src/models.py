@@ -1,10 +1,11 @@
+from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, Field
 
 
 class Model(BaseModel):
-    id: Optional[str] = Field(default=None, alias="product_id")
+    id: Optional[str] = Field(default=None, alias="object_id")
 
     @classmethod
     def get_collection(cls):
@@ -20,8 +21,9 @@ class Product(Model):
 
 class Event(Model):
     name: str
+    description: str
     image_id: str
-    date: str
+    date: datetime
 
 
 class User(Model):

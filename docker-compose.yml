@@ -23,6 +23,17 @@ services:
       - "${MONGO_PORT}:${MONGO_PORT}"
     volumes:
       - mongo-data:/data/db
+  admin:
+    build:
+      context: ./admin/
+    container_name: winebot-admin
+    env_file:
+      - .env
+    ports:
+      - "${APPLICATION_PORT}:${APPLICATION_PORT}"
+    volumes:
+      - ./admin/:/usr/src/app
+      - /usr/src/app/node_modules
 volumes:
   mongo-data:
     driver: local

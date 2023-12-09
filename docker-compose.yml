@@ -30,10 +30,7 @@ services:
     env_file:
       - .env
     ports:
-      - "${APPLICATION_PORT}:${APPLICATION_PORT}"
-    volumes:
-      - ./admin/:/usr/src/app
-      - /usr/src/app/node_modules
+      - "8000:8000"
 volumes:
   mongo-data:
     driver: local

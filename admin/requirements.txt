@@ -1,0 +1,6 @@
+mongoengine==0.27.0
+pytz==2023.3.post1
+starlette==0.33.0
+starlette-admin==0.12.2
+uvicorn==0.24.0.post1
+python-dotenv

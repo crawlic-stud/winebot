@@ -1,19 +1,8 @@
-FROM node:18-alpine
-# RUN cd ./admin
+FROM python:3.10.8
 
-
-WORKDIR /usr/src/app
-
-COPY . ..
-# COPY package*.json ./
-
-RUN npm install
-# If you are building your code for production
-# RUN npm ci --only=production
-
-# Bundle app source
+COPY requirements.txt /tmp/requirements.txt
 COPY . .
 
-EXPOSE ${APPLICATION_PORT}
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-CMD ["npm", "start"]
+CMD ["uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0"]

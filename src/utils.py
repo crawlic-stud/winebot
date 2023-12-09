@@ -2,6 +2,7 @@ from datetime import datetime
 
 from aiogram import types
 from aiogram.filters.callback_data import CallbackData
+import pytz
 
 from models import Event, Product
 
@@ -85,3 +86,8 @@ def parse_str_to_dt(dt_str: str):
 
 def parse_dt_to_str(dt: datetime):
     return dt.strftime("%d.%m.%Y")
+
+
+def get_moscow_datetime():
+    dt = datetime.now(tz=pytz.timezone("Europe/Moscow"))
+    return dt

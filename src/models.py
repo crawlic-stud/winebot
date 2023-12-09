@@ -31,6 +31,7 @@ class User(Model):
     username: str
     first_name: Optional[str]
     last_name: Optional[str]
+    last_active: datetime
 
 
 class Admin(Model):

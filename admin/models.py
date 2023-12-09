@@ -23,6 +23,7 @@ class User(db.Document):
     username = db.StringField(max_length=256)
     first_name = db.StringField(max_length=256)
     last_name = db.StringField(max_length=256)
+    last_active = db.DateTimeField()
 
 
 class Admin(db.Document):

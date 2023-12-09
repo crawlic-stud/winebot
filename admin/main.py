@@ -10,7 +10,6 @@ from models import User, Admin, Product, Event
 
 
 load_dotenv()
-MONGO_URL = f'mongodb://{os.environ["MONGO_USER"]}:{os.environ["MONGO_PASSWORD"]}@{os.environ["MONGO_HOST"]}:{os.environ["MONGO_PORT"]}'
 MONGO_URL = os.environ["DATABASE_ADMIN_URL"]
 print(MONGO_URL)
 
@@ -26,7 +25,7 @@ app = Starlette(
 )
 
 # Create admin
-admin = StarletteAdmin(title="Example: MongoEngine")
+admin = StarletteAdmin(title="Winebot Admin")
 
 admin.add_view(ModelView(User, icon="fa fa-users"))
 admin.add_view(ModelView(Admin, icon="fa fa-users"))

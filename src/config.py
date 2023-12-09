@@ -13,11 +13,13 @@ ADMIN_ID = int(os.environ["ADMIN_ID"])
 
 bot = Bot(TG_TOKEN, parse_mode="HTML")
 dp = Dispatcher(storage=MemoryStorage())
+active_users_cache = set()
 
 logging.basicConfig(level=logging.INFO)
 
 
 def setup():
+    import middleware.statistics
     from handlers import product
     from handlers import events
     from handlers import user_view

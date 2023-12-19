@@ -34,4 +34,4 @@ class Admin(db.Document):
 class UserStat(db.Document):
     meta = {"collection": "userstats"}
     d = db.StringField()
-    users = db.ListField()
+    users = db.ListField(field=db.IntField())

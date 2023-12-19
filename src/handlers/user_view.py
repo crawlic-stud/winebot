@@ -182,7 +182,8 @@ async def order_product(query: types.CallbackQuery, callback_data: OrderProduct)
         f"Поступила заявка!\n\n"
         f"Продукт: {product.name} {product.price} руб.\n"
         f"Покупатель: {query.from_user.full_name}\n"
-        f"Ник в телеграме: @{query.from_user.username}"
+        f"Ник в телеграме: @{query.from_user.username}\n"
+        f"Ссылка для связи: {query.from_user.mention_html(query.from_user.full_name)}"
     )
     await query.message.edit_reply_markup(
         reply_markup=types.InlineKeyboardMarkup(

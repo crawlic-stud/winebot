@@ -119,7 +119,14 @@ async def view_products(query: types.CallbackQuery):
     await query.message.answer(
         "Выбирайте!",
         reply_markup=types.InlineKeyboardMarkup(
-            inline_keyboard=[kb.back_button_row(GO_TO_MENU)]
+            inline_keyboard=[
+                [
+                    types.InlineKeyboardButton(
+                        text="Связаться с админом", url="https://t.me/pen_np"
+                    )
+                ],
+                kb.back_button_row(GO_TO_MENU),
+            ]
         ),
     )
 

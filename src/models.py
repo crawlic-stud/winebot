@@ -28,7 +28,7 @@ class Event(Model):
 
 class User(Model):
     user_id: int
-    username: str
+    username: Optional[str]
     first_name: Optional[str]
     last_name: Optional[str]
     last_active: datetime

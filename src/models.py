@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -36,3 +36,8 @@ class User(Model):
 
 class Admin(Model):
     user_id: int
+
+
+class UserStat(Model):
+    d: str
+    users: list[str] = Field(default_factory=list)

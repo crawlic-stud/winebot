@@ -6,7 +6,7 @@ from starlette_admin.contrib.mongoengine import Admin as StarletteAdmin, ModelVi
 from mongoengine import connect, disconnect
 from dotenv import load_dotenv
 
-from models import User, Admin, Product, Event
+from models import User, Admin, Product, Event, UserStat
 
 
 load_dotenv()
@@ -28,6 +28,7 @@ app = Starlette(
 admin = StarletteAdmin(title="Winebot Admin")
 
 admin.add_view(ModelView(User, icon="fa fa-users"))
+admin.add_view(ModelView(UserStat, icon="fa fa-users"))
 admin.add_view(ModelView(Admin, icon="fa fa-users"))
 admin.add_view(ModelView(Product, icon="fa fa-list"))
 admin.add_view(ModelView(Event, icon="fa fa-list"))

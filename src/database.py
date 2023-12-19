@@ -18,6 +18,7 @@ database_map = {
     models.Event: db[models.Event.get_collection()],
     models.User: db[models.User.get_collection()],
     models.Admin: db[models.Admin.get_collection()],
+    models.UserStat: db[models.UserStat.get_collection()],
 }
 
 

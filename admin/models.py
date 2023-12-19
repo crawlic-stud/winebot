@@ -29,3 +29,9 @@ class User(db.Document):
 class Admin(db.Document):
     meta = {"collection": "admins"}
     user_id = db.IntField()
+
+
+class UserStat(db.Document):
+    meta = {"collection": "userstats"}
+    d = db.StringField()
+    users = db.ListField()

@@ -20,13 +20,17 @@ logging.basicConfig(level=logging.INFO)
 
 def setup():
     import middleware.statistics
+    from handlers import cancel
     from handlers import product
     from handlers import events
+    from handlers import admin_view
     from handlers import user_view
     from handlers import delete
 
+    dp.include_router(cancel.router)
     dp.include_router(product.router)
     dp.include_router(events.router)
+    dp.include_router(admin_view.router)
     dp.include_router(user_view.router)
     dp.include_router(delete.router)
 
@@ -46,8 +50,10 @@ async def on_startup(admins_db: AsyncIOMotorCollection):
     async for admin in admins_db.find():
         await bot.set_my_commands(
             [
+                types.BotCommand(command="admin", description="Админ-панель"),
                 types.BotCommand(command="order", description="Создать новый товар"),
                 types.BotCommand(command="event", description="Добавить в афишу"),
+                types.BotCommand(command="cancel", description="Отменить заполнение"),
                 *default_commands,
             ],
             types.BotCommandScopeChat(chat_id=admin["user_id"]),

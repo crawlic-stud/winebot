@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from typing import Any, Awaitable, Callable
 
@@ -40,26 +41,30 @@ async def add_active_users(
     logger.info(f"Adding active user: {user.username}")
 
     # update today active users
-    await update_daily_stat(user_id, get_db(UserStat))
+    asyncio.create_task(update_daily_stat(user_id, get_db(UserStat)))
 
     # update last time user been active
     if user_id in active_users_cache:
-        await db.update_one(
-            id_filter, {"$set": {"last_active": utils.get_moscow_datetime()}}
+        asyncio.create_task(
+            db.update_one(
+                id_filter, {"$set": {"last_active": utils.get_moscow_datetime()}}
+            )
         )
         return await handler(event, data)
 
-    await db.update_one(
-        id_filter,
-        {
-            "$set": User(
-                user_id=user_id,
-                username=user.username,
-                first_name=user.first_name,
-                last_name=user.last_name,
-                last_active=utils.get_moscow_datetime(),
-            ).model_dump(exclude={"object_id", "id"})
-        },
-        upsert=True,
+    asyncio.create_task(
+        db.update_one(
+            id_filter,
+            {
+                "$set": User(
+                    user_id=user_id,
+                    username=user.username,
+                    first_name=user.first_name,
+                    last_name=user.last_name,
+                    last_active=utils.get_moscow_datetime(),
+                ).model_dump(exclude={"object_id", "id"})
+            },
+            upsert=True,
+        )
     )
     return await handler(event, data)

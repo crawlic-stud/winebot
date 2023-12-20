@@ -10,10 +10,12 @@ services:
       - mongo
     env_file:
       - .env
+    cpus: 0.4  
   mongo:
     restart: always
     image: mongo:latest
     container_name: winebot-mongo
+    cpus: 0.3  
     env_file:
       - .env
     environment:
@@ -31,6 +33,7 @@ services:
       - .env
     ports:
       - "8000:8000"
+    cpus: 0.3
 volumes:
   mongo-data:
     driver: local

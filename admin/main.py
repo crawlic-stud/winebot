@@ -11,7 +11,6 @@ from models import User, Admin, Product, Event, UserStat
 
 load_dotenv()
 MONGO_URL = os.environ["DATABASE_ADMIN_URL"]
-print(MONGO_URL)
 
 app = Starlette(
     routes=[

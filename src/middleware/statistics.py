@@ -52,19 +52,17 @@ async def add_active_users(
         )
         return await handler(event, data)
 
-    asyncio.create_task(
-        db.update_one(
-            id_filter,
-            {
-                "$set": User(
-                    user_id=user_id,
-                    username=user.username,
-                    first_name=user.first_name,
-                    last_name=user.last_name,
-                    last_active=utils.get_moscow_datetime(),
-                ).model_dump(exclude={"object_id", "id"})
-            },
-            upsert=True,
-        )
+    await db.update_one(
+        id_filter,
+        {
+            "$set": User(
+                user_id=user_id,
+                username=user.username,
+                first_name=user.first_name,
+                last_name=user.last_name,
+                last_active=utils.get_moscow_datetime(),
+            ).model_dump(exclude={"object_id", "id"})
+        },
+        upsert=True,
     )
     return await handler(event, data)

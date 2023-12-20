@@ -61,6 +61,7 @@ async def send_event_info(
         f"Название: {event.name}\n"
         f"Описание: {event.description}\n"
         f"Дата: {parse_dt_to_str(event.date)}\n"
+        f"Цена: {event.price} руб.\n"
     )
     if edit:
         await m.delete()

@@ -83,11 +83,11 @@ async def get_all_events_kb():
 @router.callback_query(F.data == GO_TO_MENU)
 @router.message(Command("menu", "start"))
 async def send_menu(update: types.Message | types.CallbackQuery):
-    text = "Выберите, что хотите приобрести:"
+    text = "Что вам интересно сегодня?"
     reply_markup = types.InlineKeyboardMarkup(
         inline_keyboard=[
             [types.InlineKeyboardButton(text="Вино", callback_data=VIEW_PRODUCTS)],
-            [types.InlineKeyboardButton(text="Афиша", callback_data=VIEW_EVENTS)],
+            [types.InlineKeyboardButton(text="Мероприятия", callback_data=VIEW_EVENTS)],
         ]
     )
     if isinstance(update, types.Message):
@@ -108,7 +108,7 @@ async def view_products(query: types.CallbackQuery):
                 inline_keyboard=[
                     [
                         types.InlineKeyboardButton(
-                            text="❤️ Заказать! ❤️",
+                            text="Заказать!",
                             callback_data=OrderProduct(product_id=str(p["_id"])).pack(),
                         )
                     ],
@@ -117,7 +117,7 @@ async def view_products(query: types.CallbackQuery):
         )
 
     await query.message.answer(
-        "Выбирайте!",
+        "Если хотите собрать свой СЕТ из представленных бутылок — свяжитесь с администратором по кнопке",
         reply_markup=types.InlineKeyboardMarkup(
             inline_keyboard=[
                 [
@@ -134,7 +134,7 @@ async def view_products(query: types.CallbackQuery):
 @router.callback_query(F.data == VIEW_EVENTS)
 async def view_events(query: types.CallbackQuery):
     await query.answer("Показываем...")
-    text = "Список доступных товаров:"
+    text = "Предстоящие мероприятия:"
     reply_markup = types.InlineKeyboardMarkup(inline_keyboard=await get_all_events_kb())
     m = query.message
     if m.photo:
@@ -154,7 +154,7 @@ async def render_event_view_for_user(
             inline_keyboard=[
                 [
                     types.InlineKeyboardButton(
-                        text="❤️ Хочу пойти! ❤️",
+                        text="Оставить заявку",
                         callback_data=OrderEvent(event_id=object_id).pack(),
                     )
                 ],
@@ -179,6 +179,16 @@ async def say_thanks(query: types.CallbackQuery):
     await query.answer("Спасибо еще раз! С вами скоро свяжутся :)", show_alert=True)
 
 
+def get_user_info_text(user: types.User):
+    text = (
+        f"Покупатель: {user.full_name}\n"
+        f"Ссылка для связи: {user.mention_html(user.full_name)}\n"
+    )
+    if user.username is not None:
+        text += f"Ник в телеграме: @{user.username}\n"
+    return text
+
+
 @router.callback_query(OrderProduct.filter())
 async def order_product(query: types.CallbackQuery, callback_data: OrderProduct):
     await query.answer(
@@ -188,9 +198,7 @@ async def order_product(query: types.CallbackQuery, callback_data: OrderProduct)
     text = (
         f"Поступила заявка!\n\n"
         f"Продукт: {product.name} {product.price} руб.\n"
-        f"Покупатель: {query.from_user.full_name}\n"
-        f"Ник в телеграме: @{query.from_user.username}\n"
-        f"Ссылка для связи: {query.from_user.mention_html(query.from_user.full_name)}"
+        f"{get_user_info_text(query.from_user)}"
     )
     await query.message.edit_reply_markup(
         reply_markup=types.InlineKeyboardMarkup(
@@ -217,8 +225,7 @@ async def order_product(query: types.CallbackQuery, callback_data: OrderEvent):
     text = (
         f"Поступила заявка!\n\n"
         f"Продукт: {event.name} {utils.parse_dt_to_str(event.date)}\n"
-        f"Покупатель: {query.from_user.full_name}\n"
-        f"Ник в телеграме: @{query.from_user.username}"
+        f"{get_user_info_text(query.from_user)}"
     )
     await query.message.edit_reply_markup(
         reply_markup=types.InlineKeyboardMarkup(

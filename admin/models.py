@@ -15,6 +15,7 @@ class Event(db.Document):
     description = db.StringField()
     image_id = db.StringField(max_length=256)
     date = db.DateTimeField(required=False)
+    price = db.IntField(required=False, default=0)
 
 
 class User(db.Document):

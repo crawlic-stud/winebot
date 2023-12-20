@@ -79,7 +79,7 @@ async def send_menu(update: types.Message | types.CallbackQuery):
     reply_markup = types.InlineKeyboardMarkup(
         inline_keyboard=[
             [types.InlineKeyboardButton(text="Вино", callback_data=VIEW_PRODUCTS)],
-            [types.InlineKeyboardButton(text="Афиша", callback_data=VIEW_EVENTS)],
+            [types.InlineKeyboardButton(text="Мероприятия", callback_data=VIEW_EVENTS)],
         ]
     )
     if isinstance(update, types.Message):

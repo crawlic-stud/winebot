@@ -19,6 +19,7 @@ class CreateEvent(StatesGroup):
     photo = State()
     description = State()
     date = State()
+    price = State()
     final = State()
 
 
@@ -40,6 +41,7 @@ EDIT_EVENT_BUTTONS = [
             CreateEvent.photo.state: "✏️ Фото",
             CreateEvent.description.state: "✏️ Описание",
             CreateEvent.date.state: "✏️ Дата",
+            CreateEvent.price.state: "✏️ Цена",
         },
         EditEventData,
     ),
@@ -113,6 +115,18 @@ async def add_date(m: types.Message, state: FSMContext):
         return
 
     data = await state.update_data(date=dt)
+    is_edit = await handle_edit(data, state, m)
+    if not is_edit:
+        await m.reply("Дата добавлена! Напишите цену в рублях:")
+        await state.set_state(CreateEvent.price)
+
+
+@router.message(CreateEvent.price)
+async def add_price(m: types.Message, state: FSMContext):
+    if not m.text.isdigit():
+        await m.reply("Введите число!")
+        return
+    data = await state.update_data(price=float(m.text))
     event = Event(**data)
     await send_final_message(m, event)
 
@@ -136,6 +150,9 @@ async def edit_text_field(
     elif callback_data.state_name == "date":
         await m.answer("Отправьте новую дату в формате дд.мм.гггг:")
         await state.set_state(CreateEvent.date)
+    elif callback_data.state_name == "price":
+        await m.answer("Отправьте новую цену на мероприятие")
+        await state.set_state(CreateEvent.price)
 
 
 @router.callback_query(F.data == SAVE_EVENT)

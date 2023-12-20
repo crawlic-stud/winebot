@@ -24,6 +24,7 @@ class Event(Model):
     description: str
     image_id: str
     date: datetime
+    price: int = Field(default=0)
 
 
 class User(Model):

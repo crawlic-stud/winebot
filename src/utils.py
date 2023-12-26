@@ -80,6 +80,12 @@ def get_message_from_update(
     return update.message
 
 
+def get_event_from_update(event: types.Update) -> types.Message | types.CallbackQuery:
+    if event.message is not None:
+        return event.message
+    return event.callback_query
+
+
 def parse_str_to_dt(dt_str: str):
     dt = datetime.strptime(dt_str, "%d.%m.%Y")
     return dt

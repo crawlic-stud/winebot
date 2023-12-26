@@ -3,7 +3,6 @@ import logging
 from typing import Any, Awaitable, Callable
 
 from aiogram import types
-import bson
 from motor.motor_asyncio import AsyncIOMotorCollection
 
 from config import dp, active_users_cache
@@ -12,12 +11,6 @@ from models import User, UserStat
 import utils
 
 logger = logging.getLogger("stat")
-
-
-def get_event_from_update(event: types.Update) -> types.Message | types.CallbackQuery:
-    if event.message is not None:
-        return event.message
-    return event.callback_query
 
 
 async def update_daily_stat(user_id: int, db: AsyncIOMotorCollection):
@@ -33,7 +26,7 @@ async def add_active_users(
     event: types.Update,
     data: dict[str, Any],
 ) -> Awaitable:
-    message_or_query = get_event_from_update(event)
+    message_or_query = utils.get_event_from_update(event)
     user = message_or_query.from_user
     user_id = user.id
     db = get_db(User)

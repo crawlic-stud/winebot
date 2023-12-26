@@ -45,6 +45,11 @@ async def is_admin(user_id: int):
     return bool(await get_db(models.Admin).find_one({"user_id": user_id}))
 
 
+async def is_old_enough(user_id: int):
+    user = (await get_db(models.User).find_one({"user_id": user_id})) or {}
+    return user.get("old_enough", False)
+
+
 async def remove_by_id_from_collection(collection: str, _id: str):
     obj_id = ObjectId(_id)
     await db[collection].delete_one({"_id": obj_id})

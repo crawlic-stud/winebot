@@ -14,12 +14,14 @@ ADMIN_ID = int(os.environ["ADMIN_ID"])
 bot = Bot(TG_TOKEN, parse_mode="HTML")
 dp = Dispatcher(storage=MemoryStorage())
 active_users_cache = set()
+old_enough_cache = set()
 
 logging.basicConfig(level=logging.INFO)
 
 
 def setup():
     import middleware.statistics
+    from middleware import old_enough
     from handlers import cancel
     from handlers import product
     from handlers import events
@@ -27,6 +29,7 @@ def setup():
     from handlers import user_view
     from handlers import delete
 
+    dp.include_router(old_enough.router)
     dp.include_router(cancel.router)
     dp.include_router(product.router)
     dp.include_router(events.router)
